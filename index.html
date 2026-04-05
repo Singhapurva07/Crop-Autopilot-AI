@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CropAutopilot AI 🌾</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --g50:#f0fdf4;--g100:#dcfce7;--g200:#bbf7d0;--g300:#86efac;
+      --g400:#4ade80;--g500:#22c55e;--g600:#16a34a;--g700:#15803d;--g800:#166534;
+      --text:#1a2e1a;--muted:#4d7a4d;--border:#bbf7d0;
+      --card:#ffffffcc;
+      --shadow:0 4px 24px rgba(21,128,61,.10);
+      --shadow-lg:0 8px 40px rgba(21,128,61,.18);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:#e8f5e9;
+      background-image:radial-gradient(ellipse at 0% 0%,#bbf7d0 0%,transparent 45%),
+        radial-gradient(ellipse at 100% 100%,#d1fae5 0%,transparent 45%),
+        url("data:image/svg+xml,%3Csvg width='52' height='52' viewBox='0 0 52 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2322c55e' fill-opacity='0.035'%3E%3Cpath d='M26 0l5 10H21L26 0zM0 26l10-5v10L0 26zm52 0l-10 5V21l10 5z'/%3E%3C/g%3E%3C/svg%3E");
+      min-height:100vh;color:var(--text)}
+
+    /* HEADER */
+    header{background:linear-gradient(135deg,var(--g800) 0%,var(--g700) 55%,var(--g600) 100%);
+      position:sticky;top:0;z-index:100;box-shadow:0 2px 24px rgba(21,128,61,.35)}
+    .h-inner{max-width:1160px;margin:0 auto;padding:13px 22px;
+      display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:11px}
+    .logo-ico{width:40px;height:40px;background:rgba(255,255,255,.18);border-radius:11px;
+      display:flex;align-items:center;justify-content:center;font-size:20px;
+      border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px)}
+    .logo h1{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;
+      color:#fff;letter-spacing:-.5px;line-height:1}
+    .logo p{font-size:10px;color:rgba(255,255,255,.7);letter-spacing:.6px;margin-top:2px}
+    .status{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);
+      border-radius:100px;padding:6px 14px;display:flex;align-items:center;gap:7px;
+      color:#fff;font-size:12px;font-weight:500;backdrop-filter:blur(8px)}
+    .dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+
+    /* NAV */
+    .nav{background:rgba(255,255,255,.1);border-top:1px solid rgba(255,255,255,.14)}
+    .nav-inner{max-width:1160px;margin:0 auto;display:flex}
+    .tab{padding:11px 20px;background:none;border:none;border-bottom:3px solid transparent;
+      color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+      cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px}
+    .tab:hover{color:rgba(255,255,255,.9)}
+    .tab.on{color:#fff;border-bottom-color:#4ade80;background:rgba(255,255,255,.1)}
+
+    /* LAYOUT */
+    .wrap{max-width:1160px;margin:0 auto;padding:26px 18px 60px}
+
+    /* HERO */
+    .hero{text-align:center;padding:32px 16px 22px;animation:up .6s ease both}
+    .badge{display:inline-flex;align-items:center;gap:7px;background:var(--g100);
+      border:1px solid var(--g300);border-radius:100px;padding:5px 14px;
+      font-size:11px;font-weight:600;color:var(--g700);margin-bottom:14px}
+    .hero h2{font-family:'Syne',sans-serif;font-size:clamp(24px,5vw,40px);font-weight:800;
+      color:var(--g800);line-height:1.15;margin-bottom:10px}
+    .hero h2 span{color:var(--g500)}
+    .hero p{color:var(--muted);font-size:14px;max-width:480px;margin:0 auto;line-height:1.65}
+
+    /* PANEL */
+    .panel{background:var(--card);border-radius:18px;border:1px solid var(--border);
+      box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(12px)}
+    .ph{padding:16px 22px;border-bottom:1px solid var(--g100);display:flex;align-items:center;gap:10px;
+      background:linear-gradient(90deg,var(--g50),transparent)}
+    .ph-ico{width:34px;height:34px;background:var(--g100);border-radius:9px;
+      display:flex;align-items:center;justify-content:center;font-size:17px}
+    .ph h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--g800)}
+    .ph p{font-size:11px;color:var(--muted)}
+    .pb{padding:22px}
+
+    /* FORM */
+    .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+    .fg{display:flex;flex-direction:column;gap:5px}
+    .fg label{font-size:11px;font-weight:600;color:var(--g700);letter-spacing:.3px}
+    .fg input,.fg select,.fg textarea{padding:9px 13px;border:1.5px solid var(--g200);
+      border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+      background:#fff;outline:none;transition:all .2s}
+    .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--g400);
+      box-shadow:0 0 0 3px rgba(34,197,94,.1)}
+    .fg textarea{resize:vertical;min-height:70px}
+
+    /* SLIDER */
+    .day-wrap{display:flex;flex-direction:column;gap:5px}
+    .day-top{display:flex;justify-content:space-between;align-items:center}
+    .day-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--g600);line-height:1}
+    .day-tag{background:var(--g100);border:1px solid var(--g200);color:var(--g700);
+      font-size:10px;font-weight:600;padding:3px 9px;border-radius:100px}
+    input[type=range]{-webkit-appearance:none;width:100%;height:5px;background:var(--g100);
+      border-radius:100px;outline:none}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+      background:var(--g500);border-radius:50%;cursor:pointer;
+      box-shadow:0 2px 8px rgba(34,197,94,.4);border:3px solid #fff}
+    .prog{margin-top:7px}
+    .prog-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px}
+    .prog-bar{height:6px;background:var(--g100);border-radius:100px;overflow:hidden}
+    .prog-fill{height:100%;background:linear-gradient(90deg,var(--g400),var(--g600));
+      border-radius:100px;transition:width .4s ease}
+
+    /* STATS */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:11px;margin-bottom:22px}
+    .stat{background:#fff;border:1px solid var(--g200);border-radius:13px;padding:14px;
+      text-align:center;transition:transform .2s}
+    .stat:hover{transform:translateY(-2px)}
+    .stat .ico{font-size:20px;margin-bottom:5px}
+    .stat .val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--g600);line-height:1}
+    .stat .lbl{font-size:10px;color:var(--muted);margin-top:3px;font-weight:500}
+
+    /* BTN */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:13px 26px;border-radius:11px;font-family:'DM Sans',sans-serif;
+      font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+    .btn-p{background:linear-gradient(135deg,var(--g700),var(--g500));color:#fff;
+      width:100%;box-shadow:0 4px 16px rgba(34,197,94,.3)}
+    .btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(34,197,94,.4)}
+    .btn-p:active{transform:none}
+    .btn-p:disabled{opacity:.55;cursor:not-allowed;transform:none!important}
+    .btn-s{background:var(--g50);color:var(--g700);border:1.5px solid var(--g200)}
+    .btn-s:hover{background:var(--g100)}
+
+    /* CHIPS */
+    .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+    .chip{background:#fff;border:1.5px solid var(--g200);color:var(--g700);
+      padding:5px 12px;border-radius:100px;font-size:11px;font-weight:500;
+      cursor:pointer;transition:all .2s}
+    .chip:hover,.chip.on{background:var(--g100);border-color:var(--g400)}
+
+    /* ── AGENTIC PIPELINE UI ── */
+    #pipeline-section{display:none;margin-top:20px}
+    .pipeline-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .pipeline-header h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--g800)}
+    .pipeline-header p{font-size:12px;color:var(--muted)}
+    .agents-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+
+    .agent-card{background:#fff;border:2px solid var(--g200);border-radius:14px;
+      padding:14px 12px;text-align:center;transition:all .3s;position:relative;overflow:hidden}
+    .agent-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--g100),transparent);
+      opacity:0;transition:opacity .3s}
+    .agent-card.running{border-color:var(--g400);box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+    .agent-card.running::before{opacity:1}
+    .agent-card.done{border-color:var(--g500);background:var(--g50)}
+    .agent-card.error{border-color:#ef4444;background:#fef2f2}
+    .agent-icon{font-size:24px;margin-bottom:6px;position:relative;z-index:1}
+    .agent-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+      color:var(--g800);position:relative;z-index:1}
+    .agent-role{font-size:10px;color:var(--muted);margin-top:2px;position:relative;z-index:1}
+    .agent-status{font-size:10px;margin-top:6px;font-weight:600;position:relative;z-index:1}
+    .agent-status.idle{color:#94a3b8}
+    .agent-status.running{color:var(--g600)}
+    .agent-status.done{color:var(--g600)}
+    .agent-status.error{color:#ef4444}
+
+    .agent-spin{display:inline-block;width:14px;height:14px;border:2px solid var(--g200);
+      border-top-color:var(--g500);border-radius:50%;animation:spin .7s linear infinite;
+      vertical-align:middle;margin-right:4px}
+
+    /* PIPELINE LOG */
+    .pipeline-log{background:var(--g800);border-radius:12px;padding:14px 16px;
+      font-family:'DM Mono','Courier New',monospace;font-size:12px;color:#d1fae5;
+      min-height:60px;max-height:120px;overflow-y:auto;margin-bottom:16px;
+      line-height:1.8}
+    .log-line{opacity:0;animation:fadeIn .3s ease forwards}
+    .log-line.done{color:#4ade80}
+    .log-line.running{color:#fde68a}
+    .log-line.info{color:#a7f3d0}
+    @keyframes fadeIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+
+    /* AGENT DATA CARDS */
+    .agent-data-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:16px}
+    .data-card{background:#fff;border:1px solid var(--g200);border-radius:12px;padding:14px;
+      animation:up .4s ease both;display:none}
+    .data-card.show{display:block}
+    .data-card h4{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+      color:var(--g700);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .data-row{display:flex;justify-content:space-between;align-items:flex-start;
+      padding:4px 0;border-bottom:1px solid var(--g50);font-size:12px;gap:8px}
+    .data-row:last-child{border:none}
+    .data-key{color:var(--muted);min-width:100px;flex-shrink:0}
+    .data-val{color:var(--text);font-weight:500;text-align:right}
+    .risk-safe{color:var(--g600);font-weight:700}
+    .risk-caution{color:#d97706;font-weight:700}
+    .risk-alert{color:#ef4444;font-weight:700}
+
+    /* FINAL OUTPUT */
+    #output-section{display:none;margin-top:16px}
+    .out-panel{background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+      border:1.5px solid var(--g300);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg)}
+    .out-header{background:linear-gradient(135deg,var(--g800),var(--g600));padding:14px 22px;
+      display:flex;align-items:center;justify-content:space-between}
+    .out-header-l{display:flex;align-items:center;gap:11px}
+    .out-header h3{font-family:'Syne',sans-serif;color:#fff;font-size:15px;font-weight:700}
+    .out-header p{color:rgba(255,255,255,.7);font-size:11px}
+    .copy-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);
+      color:#fff;padding:6px 13px;border-radius:7px;font-size:11px;font-weight:500;
+      cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+    .copy-btn:hover{background:rgba(255,255,255,.28)}
+    #out-content{padding:20px 22px;font-family:'DM Mono','Courier New',monospace;
+      font-size:13px;line-height:1.9;color:var(--g800);white-space:pre-wrap;word-break:break-word}
+
+    /* SCHEDULE TABLE */
+    .stbl{width:100%;border-collapse:collapse;font-size:12px}
+    .stbl th{background:var(--g700);color:#fff;padding:9px 13px;text-align:left;font-size:11px;font-weight:600}
+    .stbl th:first-child{border-radius:9px 0 0 0}.stbl th:last-child{border-radius:0 9px 0 0}
+    .stbl td{padding:10px 13px;border-bottom:1px solid var(--g100);color:var(--text)}
+    .stbl tr:hover td{background:var(--g50)}
+    .stbl tr:last-child td{border:none}
+    .day-badge{display:inline-block;background:var(--g100);color:var(--g700);
+      font-weight:700;font-size:11px;padding:2px 8px;border-radius:6px}
+
+    /* ASK */
+    .ask-row{display:flex;gap:9px}
+    .ask-row input{flex:1;padding:11px 14px;border:1.5px solid var(--g200);border-radius:10px;
+      font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:all .2s}
+    .ask-row input:focus{border-color:var(--g400);box-shadow:0 0 0 3px rgba(34,197,94,.1)}
+    .ask-row button{padding:11px 18px;background:var(--g600);color:#fff;border:none;
+      border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+      cursor:pointer;transition:all .2s}
+    .ask-row button:hover{background:var(--g700)}
+    #ask-ans{margin-top:12px;background:#fff;border:1px solid var(--g200);border-radius:11px;
+      padding:14px;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;display:none}
+
+    /* MISC */
+    .alert{padding:10px 14px;border-radius:9px;font-size:12px;margin-bottom:14px;
+      display:flex;align-items:flex-start;gap:8px}
+    .alert-i{background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd}
+    .alert-s{background:var(--g50);color:var(--g700);border:1px solid var(--g200)}
+    .sep{margin:22px 0 18px}
+    .tab-content{display:none}
+    .tab-content.on{display:block}
+    @keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+    footer{text-align:center;padding:22px;color:var(--muted);font-size:11px}
+
+    @media(max-width:600px){
+      .fgrid{grid-template-columns:1fr 1fr}
+      .agents-row{grid-template-columns:1fr 1fr}
+      .pb{padding:14px}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="h-inner">
+    <div class="logo">
+      <div class="logo-ico">🌾</div>
+      <div>
+        <h1>CropAutopilot AI</h1>
+        <p>SEASON-LONG FARMING ASSISTANT · 4-AGENT PIPELINE</p>
+      </div>
+    </div>
+    <div class="status"><div class="dot"></div>4 Agents Ready</div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <button class="tab on" onclick="showTab('daily',this)">⚡ Daily Update</button>
+      <button class="tab" onclick="showTab('schedule',this)">📅 Full Schedule</button>
+      <button class="tab" onclick="showTab('ask',this)">🤖 Ask AI</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge">🏆 Agentic AI · 4-Agent Pipeline · Groq LLaMA-3.3 70B</div>
+    <h2>Farmers don't remember schedules —<br><span>4 AI Agents run the farm</span></h2>
+    <p>Analyst → Planner → Forecaster → Writer. Watch each agent work live and get hyper-precise daily farm actions.</p>
+  </div>
+
+  <!-- ── TAB: DAILY ── -->
+  <div id="tab-daily" class="tab-content on">
+
+    <!-- STATS -->
+    <div class="stats d1">
+      <div class="stat panel"><div class="ico">🌾</div><div class="val" id="st-crop">—</div><div class="lbl">Crop</div></div>
+      <div class="stat panel"><div class="ico">📅</div><div class="val" id="st-day">—</div><div class="lbl">Day</div></div>
+      <div class="stat panel"><div class="ico">🌱</div><div class="val" id="st-stage">—</div><div class="lbl">Stage</div></div>
+      <div class="stat panel"><div class="ico">📍</div><div class="val" id="st-region">—</div><div class="lbl">Region</div></div>
+    </div>
+
+    <!-- FORM -->
+    <div class="panel d2">
+      <div class="ph"><div class="ph-ico">⚙️</div><div><h3>Farm Configuration</h3><p>Set details → AI agents auto-run</p></div></div>
+      <div class="pb">
+        <div class="fgrid">
+          <div class="fg"><label>🌾 Crop</label>
+            <select id="crop" onchange="upd()">
+              <option>Wheat</option><option>Rice</option><option>Cotton</option>
+              <option>Maize</option><option>Sugarcane</option><option>Soybean</option>
+              <option>Tomato</option><option>Onion</option><option>Mustard</option><option>Potato</option>
+            </select></div>
+          <div class="fg"><label>📍 Region</label>
+            <select id="region" onchange="upd()">
+              <option>Punjab</option><option>Haryana</option><option>Uttar Pradesh</option>
+              <option>Maharashtra</option><option>Madhya Pradesh</option><option>Rajasthan</option>
+              <option>Gujarat</option><option>Bihar</option><option>West Bengal</option>
+              <option>Karnataka</option><option>Tamil Nadu</option><option>Andhra Pradesh</option>
+            </select></div>
+          <div class="fg"><label>🪨 Soil Type</label>
+            <select id="soil">
+              <option>Loamy</option><option>Sandy Loam</option><option>Clay</option>
+              <option>Black Cotton Soil</option><option>Red Soil</option><option>Alluvial</option>
+            </select></div>
+          <div class="fg"><label>💧 Irrigation</label>
+            <select id="irrigation">
+              <option>Canal</option><option>Tubewell / Borewell</option><option>Drip Irrigation</option>
+              <option>Sprinkler</option><option>Rainfed</option><option>River / Pond</option>
+            </select></div>
+          <div class="fg"><label>📐 Farm Size</label>
+            <select id="area">
+              <option>1 acre</option><option>2 acres</option><option>3 acres</option>
+              <option>5 acres</option><option>1 bigha</option><option>2 bigha</option><option>1 hectare</option>
+            </select></div>
+        </div>
+
+        <!-- DAY SLIDER -->
+        <div class="fg day-wrap" style="margin-bottom:16px">
+          <label>📅 Days Since Sowing</label>
+          <div class="day-top"><div class="day-num" id="day-n">1</div><div class="day-tag" id="day-tag">Germination</div></div>
+          <input type="range" id="day" min="1" max="180" value="1" oninput="updSlider()"/>
+          <div class="prog">
+            <div class="prog-labels"><span>Sowing</span><span id="prog-pct">0%</span><span>Harvest</span></div>
+            <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <!-- WEATHER -->
+        <div class="fg" style="margin-bottom:18px">
+          <label>🌤️ Weather — Next 3 Days</label>
+          <div class="chips">
+            <span class="chip" onclick="setW(this,'Clear skies, hot and dry, no rain expected')">☀️ Hot & Dry</span>
+            <span class="chip on" onclick="setW(this,'Partly cloudy, mild temperature, no rain')">⛅ Partly Cloudy</span>
+            <span class="chip" onclick="setW(this,'Heavy rain expected all 3 days, waterlogging risk')">🌧️ Heavy Rain</span>
+            <span class="chip" onclick="setW(this,'Light drizzle, humid, moderate temperature')">🌦️ Light Rain</span>
+            <span class="chip" onclick="setW(this,'Cold wave, below 5°C, frost risk at night')">❄️ Frost</span>
+            <span class="chip" onclick="setW(this,'Heatwave, 42°C+, extreme moisture stress')">🔥 Heatwave</span>
+            <span class="chip" onclick="setW(this,'Strong winds, dust storm possible, dry')">🌬️ Windy</span>
+          </div>
+          <textarea id="weather" rows="2">Partly cloudy, mild temperature, no rain expected for 3 days</textarea>
+        </div>
+
+        <button class="btn btn-p" id="run-btn" onclick="runPipeline()">
+          🤖 Launch 4-Agent Autopilot Pipeline
+        </button>
+      </div>
+    </div>
+
+    <!-- ── AGENTIC PIPELINE UI ── -->
+    <div id="pipeline-section">
+      <div class="pipeline-header" style="margin-top:22px">
+        <div style="font-size:28px">🤖</div>
+        <div><h3>Agentic AI Pipeline — Live</h3><p>Watch 4 specialized agents process your farm data in real-time</p></div>
+      </div>
+
+      <!-- AGENT CARDS -->
+      <div class="agents-row">
+        <div class="agent-card" id="ac-Analyst">
+          <div class="agent-icon">🧠</div>
+          <div class="agent-name">Analyst</div>
+          <div class="agent-role">Condition Scanner</div>
+          <div class="agent-status idle" id="as-Analyst">Idle</div>
+        </div>
+        <div class="agent-card" id="ac-Planner">
+          <div class="agent-icon">⚡</div>
+          <div class="agent-name">Planner</div>
+          <div class="agent-role">Action Calculator</div>
+          <div class="agent-status idle" id="as-Planner">Idle</div>
+        </div>
+        <div class="agent-card" id="ac-Forecaster">
+          <div class="agent-icon">📅</div>
+          <div class="agent-name">Forecaster</div>
+          <div class="agent-role">Schedule Builder</div>
+          <div class="agent-status idle" id="as-Forecaster">Idle</div>
+        </div>
+        <div class="agent-card" id="ac-Writer">
+          <div class="agent-icon">✍️</div>
+          <div class="agent-name">Writer</div>
+          <div class="agent-role">Message Composer</div>
+          <div class="agent-status idle" id="as-Writer">Idle</div>
+        </div>
+      </div>
+
+      <!-- LOG TERMINAL -->
+      <div class="pipeline-log" id="pipeline-log">
+        <div class="log-line info">🚀 Pipeline initializing...</div>
+      </div>
+
+      <!-- AGENT DATA OUTPUT CARDS -->
+      <div class="agent-data-grid">
+        <div class="data-card" id="dc-Analyst">
+          <h4>🧠 Analyst Output</h4>
+          <div id="dd-Analyst"></div>
+        </div>
+        <div class="data-card" id="dc-Planner">
+          <h4>⚡ Planner Output</h4>
+          <div id="dd-Planner"></div>
+        </div>
+        <div class="data-card" id="dc-Forecaster">
+          <h4>📅 Forecaster Output</h4>
+          <div id="dd-Forecaster"></div>
+        </div>
+      </div>
+
+      <!-- FINAL OUTPUT -->
+      <div id="output-section">
+        <div class="out-panel">
+          <div class="out-header">
+            <div class="out-header-l">
+              <div style="font-size:22px">✅</div>
+              <div><h3>CropAutopilot Daily Briefing</h3><p id="out-meta">4 agents complete</p></div>
+            </div>
+            <button class="copy-btn" onclick="copyOut()">📋 Copy</button>
+          </div>
+          <div id="out-content"></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-daily -->
+
+  <!-- ── TAB: SCHEDULE ── -->
+  <div id="tab-schedule" class="tab-content">
+    <div class="panel" style="margin-top:4px">
+      <div class="ph"><div class="ph-ico">📅</div><div><h3>Full Season Schedule</h3><p>AI-generated milestone plan</p></div></div>
+      <div class="pb">
+        <div class="alert alert-i">ℹ️ Generates the complete crop lifecycle — sowing to harvest — with milestones, inputs & savings.</div>
+        <div class="fgrid" style="max-width:500px">
+          <div class="fg"><label>🌾 Crop</label><select id="sc-crop"><option>Wheat</option><option>Rice</option><option>Cotton</option><option>Maize</option><option>Sugarcane</option><option>Soybean</option><option>Tomato</option><option>Onion</option></select></div>
+          <div class="fg"><label>📍 Region</label><select id="sc-region"><option>Punjab</option><option>Haryana</option><option>Uttar Pradesh</option><option>Maharashtra</option><option>Madhya Pradesh</option></select></div>
+          <div class="fg"><label>📅 Season Days</label><input type="number" id="sc-days" value="120" min="60" max="400"/></div>
+        </div>
+        <button class="btn btn-p" id="sc-btn" onclick="loadSched()" style="max-width:280px">📅 Generate Season Plan</button>
+        <div id="sc-out" style="margin-top:18px;overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: ASK ── -->
+  <div id="tab-ask" class="tab-content">
+    <div class="panel" style="margin-top:4px">
+      <div class="ph"><div class="ph-ico">🤖</div><div><h3>Ask Crop Expert AI</h3><p>Instant answers to any farming question</p></div></div>
+      <div class="pb">
+        <div class="alert alert-s">🌾 Ask anything — pest ID, fertilizer dose, weather precautions, harvest timing, disease symptoms...</div>
+        <div class="chips">
+          <span class="chip" onclick="setQ('My wheat leaves are turning yellow. What is wrong and what to spray?')">🌿 Yellow leaves?</span>
+          <span class="chip" onclick="setQ('How much urea per acre for wheat at day 30?')">💧 Urea dose?</span>
+          <span class="chip" onclick="setQ('Safe to spray pesticide before rain tomorrow?')">🌧️ Spray before rain?</span>
+          <span class="chip" onclick="setQ('Best time to harvest wheat for maximum yield?')">🌾 Harvest time?</span>
+          <span class="chip" onclick="setQ('How to protect cotton from bollworm attack?')">🐛 Bollworm?</span>
+          <span class="chip" onclick="setQ('Sandy soil — how to improve water retention cheaply?')">🪨 Sandy soil fix?</span>
+        </div>
+        <div class="ask-row">
+          <input type="text" id="ask-q" placeholder="e.g. Mere gehun ki patti peeli ho rahi hai, kya karun?"/>
+          <button onclick="askAI()">Ask 🤖</button>
+        </div>
+        <div id="ask-ans"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+<footer>🌾 <strong>CropAutopilot AI</strong> · 4-Agent Agentic Pipeline · Groq LLaMA-3.3 70B · Built for Indian Farmers 🇮🇳</footer>
+
+<script>
+// ── STAGE DATA ────────────────────────────────────────────────────────────────
+const STAGES = {
+  wheat:[[0,10,"Germination"],[11,25,"Tillering"],[26,50,"Jointing"],[51,75,"Heading"],[76,100,"Grain Fill"],[101,180,"Maturity"]],
+  rice:[[0,15,"Nursery"],[16,30,"Transplanting"],[31,60,"Vegetative"],[61,85,"Reproductive"],[86,110,"Ripening"],[111,180,"Harvest"]],
+  cotton:[[0,15,"Germination"],[16,40,"Seedling"],[41,80,"Vegetative"],[81,110,"Flowering"],[111,140,"Boll Dev"],[141,180,"Maturity"]],
+  maize:[[0,10,"Germination"],[11,25,"Seedling"],[26,50,"Vegetative"],[51,75,"Tasseling"],[76,100,"Grain Fill"],[101,180,"Maturity"]],
+  sugarcane:[[0,30,"Germination"],[31,90,"Tillering"],[91,180,"Grand Growth"]],
+  soybean:[[0,10,"Germination"],[11,30,"Vegetative"],[31,60,"Flowering"],[61,80,"Pod Set"],[81,130,"Maturity"]],
+  tomato:[[0,15,"Seedling"],[16,35,"Vegetative"],[36,55,"Flowering"],[56,80,"Fruit Set"],[81,140,"Harvest"]],
+  onion:[[0,20,"Seedling"],[21,45,"Vegetative"],[46,70,"Bulb Init"],[71,130,"Maturity"]],
+  mustard:[[0,10,"Germination"],[11,25,"Rosette"],[26,45,"Bolting"],[46,65,"Flowering"],[66,120,"Maturity"]],
+  potato:[[0,15,"Sprout"],[16,55,"Vegetative"],[56,80,"Tuber Bulking"],[81,120,"Harvest"]],
+};
+function getStage(crop,day){
+  const k=crop.toLowerCase(),s=STAGES[k]||[[0,60,"Early"],[61,130,"Mid"],[131,180,"Late"]];
+  for(const[a,b,n] of s)if(day>=a&&day<=b)return n;
+  return "Mature";
+}
+function updSlider(){
+  const d=+document.getElementById('day').value;
+  const c=document.getElementById('crop').value;
+  document.getElementById('day-n').textContent=d;
+  document.getElementById('day-tag').textContent=getStage(c,d);
+  const pct=Math.round((d/180)*100);
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  upd();
+}
+function upd(){
+  const c=document.getElementById('crop').value;
+  const d=document.getElementById('day').value;
+  document.getElementById('st-crop').textContent=c;
+  document.getElementById('st-day').textContent='Day '+d;
+  document.getElementById('st-stage').textContent=getStage(c,+d);
+  document.getElementById('st-region').textContent=document.getElementById('region').value;
+}
+function setW(el,txt){
+  document.getElementById('weather').value=txt;
+  document.querySelectorAll('.chips .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+function setQ(q){document.getElementById('ask-q').value=q}
+function showTab(tab,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+tab).classList.add('on');
+  btn.classList.add('on');
+}
+
+// ── PIPELINE HELPERS ──────────────────────────────────────────────────────────
+function setAgent(name,state){
+  const card=document.getElementById('ac-'+name);
+  const status=document.getElementById('as-'+name);
+  card.className='agent-card '+state;
+  if(state==='running'){
+    status.className='agent-status running';
+    status.innerHTML=`<span class="agent-spin"></span>Running...`;
+  } else if(state==='done'){
+    status.className='agent-status done';
+    status.textContent='✅ Done';
+  } else if(state==='error'){
+    status.className='agent-status error';
+    status.textContent='❌ Error';
+  } else {
+    status.className='agent-status idle';
+    status.textContent='Idle';
+  }
+}
+function addLog(msg,cls='info'){
+  const log=document.getElementById('pipeline-log');
+  const line=document.createElement('div');
+  line.className='log-line '+cls;
+  line.textContent=msg;
+  log.appendChild(line);
+  log.scrollTop=log.scrollHeight;
+}
+function clearLog(){
+  document.getElementById('pipeline-log').innerHTML='';
+}
+function resetAgents(){
+  ['Analyst','Planner','Forecaster','Writer'].forEach(n=>{
+    setAgent(n,'idle');
+    const dc=document.getElementById('dc-'+n);
+    if(dc)dc.classList.remove('show');
+  });
+}
+function renderDataCard(agent,data){
+  const dc=document.getElementById('dc-'+agent);
+  const dd=document.getElementById('dd-'+agent);
+  if(!dc||!dd)return;
+  let html='';
+  if(Array.isArray(data)){
+    data.forEach((r,i)=>{
+      html+=`<div class="data-row"><span class="data-key">+Day ${r.day_offset||i}</span><span class="data-val">${r.action||''}</span></div>`;
+    });
+  } else {
+    for(const[k,v] of Object.entries(data)){
+      const label=k.replace(/_/g,' ');
+      let valHtml=`<span class="data-val">${v}</span>`;
+      if(k==='risk_level'){
+        const cls=v==='Safe'?'risk-safe':v==='Caution'?'risk-caution':'risk-alert';
+        valHtml=`<span class="${cls}">${v}</span>`;
+      }
+      html+=`<div class="data-row"><span class="data-key">${label}</span>${valHtml}</div>`;
+    }
+  }
+  dd.innerHTML=html;
+  dc.classList.add('show');
+}
+
+// ── MAIN PIPELINE ─────────────────────────────────────────────────────────────
+async function runPipeline(){
+  const btn=document.getElementById('run-btn');
+  btn.disabled=true; btn.textContent='🤖 Pipeline Running...';
+
+  document.getElementById('pipeline-section').style.display='block';
+  document.getElementById('output-section').style.display='none';
+  clearLog(); resetAgents();
+  addLog('🚀 CropAutopilot 4-Agent Pipeline started','info');
+
+  const payload={
+    crop: document.getElementById('crop').value,
+    day: document.getElementById('day').value,
+    region: document.getElementById('region').value,
+    soil: document.getElementById('soil').value,
+    weather: document.getElementById('weather').value,
+    area: document.getElementById('area').value,
+    irrigation: document.getElementById('irrigation').value,
+  };
+
+  try {
+    const resp = await fetch('/api/autopilot/stream',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder();
+    let buf='';
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');
+      buf=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data:'))continue;
+        try{
+          const ev=JSON.parse(line.slice(5).trim());
+          handleEvent(ev, payload);
+        }catch(e){}
+      }
+    }
+  } catch(e){
+    addLog('❌ Error: '+e.message,'error');
+  }
+  btn.disabled=false; btn.textContent='🤖 Launch 4-Agent Autopilot Pipeline';
+}
+
+function handleEvent(ev, payload){
+  if(ev.type==='agent_start'){
+    setAgent(ev.agent,'running');
+    addLog(ev.msg,'running');
+  } else if(ev.type==='agent_done'){
+    setAgent(ev.agent,'done');
+    addLog(`✅ ${ev.agent} complete`,'done');
+    renderDataCard(ev.agent,ev.data);
+  } else if(ev.type==='final'){
+    setAgent('Writer','done');
+    addLog('✅ Writer complete','done');
+    addLog('🎉 All 4 agents finished! Briefing ready.','done');
+    document.getElementById('output-section').style.display='block';
+    document.getElementById('out-content').textContent=ev.message;
+    document.getElementById('out-meta').textContent=
+      `${payload.crop} · Day ${payload.day} · ${ev.stage} · ${payload.region}`;
+    document.getElementById('output-section').scrollIntoView({behavior:'smooth',block:'nearest'});
+  } else if(ev.type==='error'){
+    addLog('❌ '+ev.message,'error');
+    ['Analyst','Planner','Forecaster','Writer'].forEach(n=>{
+      if(document.getElementById('ac-'+n).classList.contains('running'))
+        setAgent(n,'error');
+    });
+  }
+}
+
+function copyOut(){
+  navigator.clipboard.writeText(document.getElementById('out-content').textContent).then(()=>{
+    const b=document.querySelector('.copy-btn'); b.textContent='✅ Copied!';
+    setTimeout(()=>b.textContent='📋 Copy',2000);
+  });
+}
+
+// ── SCHEDULE ──────────────────────────────────────────────────────────────────
+async function loadSched(){
+  const btn=document.getElementById('sc-btn');
+  const out=document.getElementById('sc-out');
+  btn.disabled=true; btn.textContent='⏳ Generating...';
+  out.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted)">⏳ AI building your season plan...</div>`;
+  try{
+    const r=await fetch('/api/schedule',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({crop:document.getElementById('sc-crop').value,
+        region:document.getElementById('sc-region').value,
+        total_days:document.getElementById('sc-days').value})});
+    const d=await r.json();
+    if(d.success&&d.schedule.length){
+      let html=`<table class="stbl"><thead><tr><th>Day</th><th>Action</th><th>Product/Input</th><th>Quantity</th><th>💰 Saving</th></tr></thead><tbody>`;
+      d.schedule.forEach(row=>{
+        html+=`<tr><td><span class="day-badge">Day ${row.day}</span></td><td>${row.action||'—'}</td><td>${row.input||'—'}</td><td>${row.quantity||'—'}</td><td>${row.cost_saving||'—'}</td></tr>`;
+      });
+      html+='</tbody></table>';
+      out.innerHTML=html;
+    } else {
+      out.innerHTML=`<div class="alert alert-i">⚠️ ${d.error||'Could not generate. Try again.'}</div>`;
+    }
+  }catch(e){out.innerHTML=`<div class="alert alert-i">❌ ${e.message}</div>`;}
+  btn.disabled=false; btn.textContent='📅 Generate Season Plan';
+}
+
+// ── ASK AI ────────────────────────────────────────────────────────────────────
+async function askAI(){
+  const q=document.getElementById('ask-q').value.trim();
+  if(!q)return;
+  const ans=document.getElementById('ask-ans');
+  const ctx=`Crop:${document.getElementById('crop')?.value||'unknown'}, Region:${document.getElementById('region')?.value||'India'}, Day:${document.getElementById('day')?.value||'?'}`;
+  ans.style.display='block'; ans.textContent='⏳ Thinking...';
+  try{
+    const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:q,context:ctx})});
+    const d=await r.json();
+    ans.textContent=d.success?d.answer:'❌ '+d.error;
+  }catch(e){ans.textContent='❌ '+e.message;}
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('ask-q').addEventListener('keypress',e=>{if(e.key==='Enter')askAI()});
+  upd(); updSlider();
+});
+</script>
+</body>
+</html>
