@@ -3,7 +3,7 @@ import os, json, re
 from groq import Groq
 
 app = Flask(__name__)
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "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")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY)
 MODEL = "llama-3.3-70b-versatile"
 
